@@ -10,9 +10,9 @@ class RawSql
   protected ?Carbon $dateStart = null;
   protected ?Carbon $dateEnd = null;
 
-  public function getFormatedFilters(): array
+  public function getFormatedFilters(): string
   {
-    return $this->formatFilters();
+    return $this->formatRawSql();
   }
 
   public function getFormatedSql(): String
@@ -20,10 +20,10 @@ class RawSql
     return $this->formatRawSql();
   }
 
-  public function setFilters(?Carbon $dateStart, ?Carbon $dateEnd): void
+  public function setFilters(?string $dateStart, ?string $dateEnd): void
   {
-    $this->dateStart = $dateStart;
-    $this->dateEnd = $dateEnd;
+    $this->dateStart = Carbon::parse($dateStart);
+    $this->dateEnd = Carbon::parse($dateEnd);
   }
 
   public function setRawSql(String $rawSql): void
@@ -31,28 +31,55 @@ class RawSql
     $this->rawSql = $rawSql;
   }
 
-  private function formatRawSql(): String
+  public function getBindings(): array
   {
-    if (!str_contains($this->rawSql, 'dateEnd') || !str_contains($this->rawSql, 'dateStart')) {
-      $formatedSql = $this->rawSql;
+    return $this->mountBindings();
+  }
+
+  private function getDateTimeStringByType(string $dateType): String
+  {
+    if ($dateType === 'start') {
+      return $this->dateStart->toDateTimeString();
     }
 
-    if (str_contains($this->rawSql, 'dateStart') && str_contains($this->rawSql, 'dateEnd')) {
-      $formatedSql = str_replace(['dateStart', 'dateEnd'], '?', $this->rawSql);
+    if ($dateType === 'end') {
+      return $this->dateEnd->toDateTimeString();
+    }
+
+    return '';
+  }
+
+  private function formatRawSql(): String
+  {
+    if ($this->dateStart) {
+      $formatedSql = $this->rawSql . ' where t.created_at >= ?';
+    }
+
+    if ($this->dateEnd) {
+      $formatedSql = $this->rawSql . ' where t.created_at <= ?';
+    }
+
+    if ($this->dateStart && $this->dateEnd) {
+      $formatedSql = $this->rawSql . ' where t.created_at between ? and ?';
     }
 
     return $formatedSql;
   }
 
-  private function formatFilters(): array
+  private function mountBindings(): array
   {
-    $filters = [];
-
-    if (str_contains($this->rawSql, 'dateStart') && str_contains($this->rawSql, 'dateEnd')) {
-      array_push($filters, $this->dateStart->toDateTimeString());
-      array_push($filters, $this->dateEnd->toDateTimeString());
+    if ($this->dateStart) {
+      $bindings = [$this->getDateTimeStringByType('start')];
     }
 
-    return $filters;
+    if ($this->dateEnd) {
+      $bindings = [$this->getDateTimeStringByType('end')];
+    }
+
+    if ($this->dateStart && $this->dateEnd) {
+      $bindings = [$this->getDateTimeStringByType('start'), $this->getDateTimeStringByType('end')];
+    }
+
+    return $bindings;
   }
 }

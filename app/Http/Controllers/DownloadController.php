@@ -31,8 +31,8 @@ class DownloadController extends Controller
             $validatedParams = $request->validated();
             $reportData = $this->service->getReportData($validatedParams);
             return Excel::download(new DownloadExport($reportData), 'downloads.xlsx');
-        } catch (\Throwable $th) {
-            throw new Exception($th->getMessage(), $th->getCode());
+        } catch (Exception $e) {
+            throw new Exception($e->getMessage(), $e->getCode());
         }
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Repository;
 
 use App\Models\Report;
+use Illuminate\Support\Facades\DB;
 
 class ReportRepository
 {
@@ -22,5 +23,10 @@ class ReportRepository
     }
 
     return $result->toArray();
+  }
+
+  public function executeRawSql(String $sql, array $bindings): array
+  {
+    return DB::select($sql, $bindings);
   }
 }

@@ -39,8 +39,8 @@ class DownloadService
 
   public function setDateParamsInRawSql(array $params): void
   {
-    $dateStart = array_key_exists('dateStart', $params) ? Carbon::parse($params['dateStart']) : null;
-    $dateEnd = array_key_exists('dateEnd', $params) ? Carbon::parse($params['dateEnd']) : null;
+    $dateStart = array_key_exists('dateStart', $params) ? $params['dateStart'] : null;
+    $dateEnd = array_key_exists('dateEnd', $params) ? $params['dateEnd']  : null;
     $this->rawSql->setFilters($dateStart, $dateEnd);
   }
 
@@ -57,10 +57,12 @@ class DownloadService
 
   private function getCreatedAndNameData(): array
   {
-    if (!$this->rawSql->getFormatedSql()) {
+    $formatedSql = $this->rawSql->getFormatedFilters();
+    $bindings = $this->rawSql->getBindings();
+    if (!$formatedSql) {
       return [];
     }
 
-    return DB::select($this->rawSql->getFormatedSql(), $this->rawSql->getFormatedFilters());
+    return $this->repository->executeRawSql($formatedSql, $bindings);
   }
 }
