@@ -20,10 +20,10 @@ class RawSql
     return $this->formatRawSql();
   }
 
-  public function setFilters(?string $dateStart, ?string $dateEnd): void
+  public function setFilters(?string $dateStart = '', ?string $dateEnd = ''): void
   {
-    $this->dateStart = Carbon::parse($dateStart);
-    $this->dateEnd = Carbon::parse($dateEnd);
+    $this->dateStart = $dateStart ? Carbon::parse($dateStart) : null;
+    $this->dateEnd = $dateEnd ? Carbon::parse($dateEnd) : null;
   }
 
   public function setRawSql(String $rawSql): void
@@ -36,7 +36,7 @@ class RawSql
     return $this->mountBindings();
   }
 
-  private function getDateTimeStringByType(string $dateType): String
+  public function getDateTimeStringByType(string $dateType): String
   {
     if ($dateType === 'start') {
       return $this->dateStart->toDateTimeString();
@@ -49,25 +49,33 @@ class RawSql
     return '';
   }
 
-  private function formatRawSql(): String
+  public function formatRawSql(): String
   {
-    if ($this->dateStart) {
+    if(!$this->dateStart && !$this->dateEnd) {
+      $formatedSql = $this->rawSql;
+    }
+
+    if (!empty($this->dateStart)) {
       $formatedSql = $this->rawSql . ' where t.created_at >= ?';
     }
 
-    if ($this->dateEnd) {
+    if (!empty($this->dateEnd)) {
       $formatedSql = $this->rawSql . ' where t.created_at <= ?';
     }
 
-    if ($this->dateStart && $this->dateEnd) {
+    if (!empty($this->dateStart) && !empty($this->dateEnd)) {
       $formatedSql = $this->rawSql . ' where t.created_at between ? and ?';
     }
 
     return $formatedSql;
   }
 
-  private function mountBindings(): array
+  public function mountBindings(): array
   {
+    if(!$this->dateStart && !$this->dateEnd) {
+      $bindings = [];
+    }
+
     if ($this->dateStart) {
       $bindings = [$this->getDateTimeStringByType('start')];
     }
