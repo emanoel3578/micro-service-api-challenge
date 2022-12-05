@@ -2,26 +2,65 @@
 
 namespace App\Http\Services;
 
-use DateTime;
+use App\Http\Entities\RawSql;
+use App\Http\Repository\ReportRepository;
+use App\Models\Report;
+use Carbon\Carbon;
+use Exception;
+use Illuminate\Support\Facades\DB;
 
-class DownloadService 
+class DownloadService
 {
   protected int $id;
-  protected DateTime $dateStart;
-  protected DateTime $dateEnd;
+  protected RawSql $rawSql;
 
-  public function setId(Int $id): void
+  public function __construct(ReportRepository $repository)
   {
-    $this->id = $id;
+    $this->repository = $repository;
+    $this->rawSql = new RawSql();
   }
 
-  public function setDateStart(DateTime $dateStart): void
+  public function getReportData(array $params): array
   {
-    $this->dateStart = $dateStart;
+    $this->setId($params);
+    $this->setDateParamsInRawSql($params);
+    $this->mountReportQuery();
+    return $this->getCreatedAndNameData();
   }
 
-  public function setDateEnd(DateTime $dateEnd): void
+  private function setId(array $params): void
   {
-    $this->dateEnd = $dateEnd;
+    if (empty($params['id'])) { 
+      throw new Exception('Something went wrong with the given id', 500);
+    }
+
+    $this->id = $params['id'];
+  }
+
+  public function setDateParamsInRawSql(array $params): void
+  {
+    $dateStart = array_key_exists('dateStart', $params) ? Carbon::parse($params['dateStart']) : null;
+    $dateEnd = array_key_exists('dateEnd', $params) ? Carbon::parse($params['dateEnd']) : null;
+    $this->rawSql->setFilters($dateStart, $dateEnd);
+  }
+
+  private function mountReportQuery(): void
+  {
+    $resultedRawSql = $this->repository->getReportQuery($this->id);
+
+    if (!$resultedRawSql) {
+      throw new Exception('Id was not found', 404);
+    }
+    
+    $this->rawSql->setRawSql($resultedRawSql['sql']);
+  }
+
+  private function getCreatedAndNameData(): array
+  {
+    if (!$this->rawSql->getFormatedSql()) {
+      return [];
+    }
+
+    return DB::select($this->rawSql->getFormatedSql(), $this->rawSql->getFormatedFilters());
   }
 }

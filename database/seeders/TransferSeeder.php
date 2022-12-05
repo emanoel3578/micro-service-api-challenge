@@ -20,5 +20,33 @@ class TransferSeeder extends Seeder
             'created_at' => Carbon::now(),
             'user_id' => 1
         ]);
+        DB::table('transfer')->insert([
+            'created_at' => Carbon::now(),
+            'user_id' => 2
+        ]);
+        DB::table('transfer')->insert([
+            'created_at' => Carbon::now(),
+            'user_id' => 3
+        ]);
+        DB::table('transfer')->insert([
+            'created_at' => Carbon::now(),
+            'user_id' => 4
+        ]);
+        DB::table('transfer')->insert([
+            'created_at' => Carbon::now(),
+            'user_id' => 5
+        ]);
+        DB::table('transfer')->insert([
+            'created_at' => Carbon::now(),
+            'user_id' => 6
+        ]);
+        DB::table('transfer')->insert([
+            'created_at' => Carbon::now(),
+            'user_id' => 7
+        ]);
+        DB::table('transfer')->insert([
+            'created_at' => Carbon::now(),
+            'user_id' => 8
+        ]);
     }
 }

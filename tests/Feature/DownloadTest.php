@@ -57,23 +57,30 @@ class DownloadTest extends TestCase
         ]);
     }
 
+    public function test_should_succeed_when_id_dateStart_dateEnd_is_valid()
+    {
+        $response = $this->json('GET', 'api/download', ['id' => 5, 'dateStart' => Carbon::now(), 'dateEnd' => Carbon::now()]);
+
+        $response->assertStatus(200);
+    }
+
     public function test_should_succeed_when_id_is_valid()
     {
-        $response = $this->json('GET', 'api/download', ['id' => 3]);
+        $response = $this->json('GET', 'api/download', ['id' => 5]);
 
         $response->assertStatus(200);
     }
 
     public function test_should_succeed_when_dateStart_is_valid()
     {
-        $response = $this->json('GET', 'api/download', ['id' => 3, 'dateStart' => Carbon::now()]);
+        $response = $this->json('GET', 'api/download', ['id' => 5, 'dateStart' => Carbon::now()]);
 
         $response->assertStatus(200);
     }
 
     public function test_should_succeed_when_dateEnd_is_valid()
     {
-        $response = $this->json('GET', 'api/download', ['id' => 3, 'dateEnd' => Carbon::now()]);
+        $response = $this->json('GET', 'api/download', ['id' => 5, 'dateEnd' => Carbon::now()]);
 
         $response->assertStatus(200);
     }
