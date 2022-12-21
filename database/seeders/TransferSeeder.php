@@ -38,15 +38,18 @@ class TransferSeeder extends Seeder
         ]);
         DB::table('transfer')->insert([
             'created_at' => Carbon::now(),
-            'user_id' => 6
+            'user_id' => 6,
+            'updated_at' => Carbon::now()
         ]);
         DB::table('transfer')->insert([
             'created_at' => Carbon::now(),
-            'user_id' => 7
+            'user_id' => 7,
+            'updated_at' => Carbon::now()
         ]);
         DB::table('transfer')->insert([
             'created_at' => Carbon::now(),
-            'user_id' => 8
+            'user_id' => 8,
+            'updated_at' => Carbon::now()
         ]);
     }
 }

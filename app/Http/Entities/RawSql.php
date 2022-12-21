@@ -3,6 +3,7 @@
 namespace App\Http\Entities;
 
 use Carbon\Carbon;
+use Exception;
 
 class RawSql
 {
@@ -10,14 +11,14 @@ class RawSql
   protected ?Carbon $dateStart = null;
   protected ?Carbon $dateEnd = null;
 
-  public function getFormatedFilters(): string
+  public function getFormatedSql(): string
   {
-    return $this->formatRawSql();
+    return $this->formatRawSql()->formatedSql;
   }
-
-  public function getFormatedSql(): String
+  
+  public function getBindings(): array
   {
-    return $this->formatRawSql();
+    return $this->formatRawSql()->bindings;
   }
 
   public function setFilters(?string $dateStart = '', ?string $dateEnd = ''): void
@@ -31,9 +32,15 @@ class RawSql
     $this->rawSql = $rawSql;
   }
 
-  public function getBindings(): array
+  public function checkIfRawSqlParametersAreCorrect(): void
   {
-    return $this->mountBindings();
+    if ($this->rawSqlHasDateStartParameter() && !$this->dateStart) {
+      throw new Exception('The report query has a dateStart parameter but it was not given a valid value', 402);
+    }
+
+    if ($this->rawSqlHasDateEndParameter() && !$this->dateEnd) {
+      throw new Exception('The report query has a dateEnd parameter but it was not given a valid value', 402);
+    }
   }
 
   public function getDateTimeStringByType(string $dateType): String
@@ -49,45 +56,41 @@ class RawSql
     return '';
   }
 
-  public function formatRawSql(): String
+  public function rawSqlHasDateStartParameter(): bool
   {
-    if(!$this->dateStart && !$this->dateEnd) {
-      $formatedSql = $this->rawSql;
-    }
-
-    if (!empty($this->dateStart)) {
-      $formatedSql = $this->rawSql . ' where t.created_at >= ?';
-    }
-
-    if (!empty($this->dateEnd)) {
-      $formatedSql = $this->rawSql . ' where t.created_at <= ?';
-    }
-
-    if (!empty($this->dateStart) && !empty($this->dateEnd)) {
-      $formatedSql = $this->rawSql . ' where t.created_at between ? and ?';
-    }
-
-    return $formatedSql;
+    return str_contains($this->rawSql, 'dateStart');
   }
 
-  public function mountBindings(): array
+  public function rawSqlHasDateEndParameter(): bool
   {
-    if(!$this->dateStart && !$this->dateEnd) {
-      $bindings = [];
+    return str_contains($this->rawSql, 'dateEnd');
+  }
+
+  public function formatRawSql(): object
+  {
+    $formatedSqlWithBindings = (object) [
+      'formatedSql' => $this->rawSql,
+      'bindings' => []
+    ];
+
+    if (($this->rawSqlHasDateStartParameter() && $this->dateStart) && ($this->rawSqlHasDateEndParameter() && $this->dateEnd)) {
+      $formatedSqlWithBindings->formatedSql = str_replace(['dateStart', 'dateEnd'], ['?', '?'], $this->rawSql);
+      $formatedSqlWithBindings->bindings = [$this->getDateTimeStringByType('start'), $this->getDateTimeStringByType('end')];
+      return $formatedSqlWithBindings;
     }
 
-    if ($this->dateStart) {
-      $bindings = [$this->getDateTimeStringByType('start')];
+    if ($this->rawSqlHasDateStartParameter() && $this->dateStart) {
+      $formatedSqlWithBindings->formatedSql = str_replace('dateStart', '?', $this->rawSql);
+      $formatedSqlWithBindings->bindings = [$this->getDateTimeStringByType('start')];
+      return $formatedSqlWithBindings;
     }
 
-    if ($this->dateEnd) {
-      $bindings = [$this->getDateTimeStringByType('end')];
+    if ($this->rawSqlHasDateEndParameter() && $this->dateEnd) {
+      $formatedSqlWithBindings->formatedSql = str_replace('dateEnd', '?', $this->rawSql);
+      $formatedSqlWithBindings->bindings = [$this->getDateTimeStringByType('end')];
+      return $formatedSqlWithBindings;
     }
-
-    if ($this->dateStart && $this->dateEnd) {
-      $bindings = [$this->getDateTimeStringByType('start'), $this->getDateTimeStringByType('end')];
-    }
-
-    return $bindings;
+    
+    return $formatedSqlWithBindings;
   }
 }

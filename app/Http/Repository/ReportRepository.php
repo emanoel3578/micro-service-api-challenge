@@ -25,7 +25,7 @@ class ReportRepository
     return $result->toArray();
   }
 
-  public function executeRawSql(String $sql, array $bindings): array
+  public function executeSql(String $sql, array $bindings): array
   {
     return DB::select($sql, $bindings);
   }

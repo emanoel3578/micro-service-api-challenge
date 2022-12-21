@@ -28,27 +28,15 @@ class ReportSeeder extends Seeder
         ]);
         DB::table('report')->insert([
             'id' => 8,
-            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id',
+            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id where t.created_at > dateStart',
         ]);
         DB::table('report')->insert([
             'id' => 9,
-            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id',
+            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id where t.updated_at > dateStart',
         ]);
         DB::table('report')->insert([
             'id' => 10,
-            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id',
-        ]);
-        DB::table('report')->insert([
-            'id' => 11,
-            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id',
-        ]);
-        DB::table('report')->insert([
-            'id' => 12,
-            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id',
-        ]);
-        DB::table('report')->insert([
-            'id' => 13,
-            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id',
+            'sql' => 'Select u.name, t.created_at from user u inner join transfer t on u.id = t.user_id where t.created_at between dateStart and dateEnd',
         ]);
     }
 }

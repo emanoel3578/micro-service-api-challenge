@@ -25,7 +25,7 @@ class DownloadService
     $this->setId($params);
     $this->setDateParamsInRawSql($params);
     $this->mountReportQuery();
-    return $this->getCreatedAndNameData();
+    return $this->getFinalData();
   }
 
   private function setId(array $params): void
@@ -53,16 +53,18 @@ class DownloadService
     }
     
     $this->rawSql->setRawSql($resultedRawSql['sql']);
+    $this->rawSql->checkIfRawSqlParametersAreCorrect();
   }
 
-  private function getCreatedAndNameData(): array
+  private function getFinalData(): array
   {
-    $formatedSql = $this->rawSql->getFormatedFilters();
+    $formatedSql = $this->rawSql->getFormatedSql();
     $bindings = $this->rawSql->getBindings();
+   
     if (!$formatedSql) {
       return [];
     }
 
-    return $this->repository->executeRawSql($formatedSql, $bindings);
+    return $this->repository->executeSql($formatedSql, $bindings);
   }
 }

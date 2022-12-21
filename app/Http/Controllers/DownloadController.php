@@ -13,10 +13,9 @@ class DownloadController extends Controller
 {
     protected DownloadService $service;
 
-    function __construct()
+    function __construct(DownloadService $service)
     {
-        $repository = new ReportRepository();
-        $this->service = new DownloadService($repository);
+        $this->service = $service;
     }
 
     /**
@@ -32,7 +31,7 @@ class DownloadController extends Controller
             $reportData = $this->service->getReportData($validatedParams);
             return Excel::download(new DownloadExport($reportData), 'downloads.xlsx');
         } catch (Exception $e) {
-            throw new Exception($e->getMessage(), $e->getCode());
+            throw new Exception($e->getMessage(), (int) $e->getCode());
         }
     }
 }
